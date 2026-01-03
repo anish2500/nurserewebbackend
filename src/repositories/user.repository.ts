@@ -1,49 +1,52 @@
-import { UserModel, IUser } from "../models/user.model";
+import { IUser, UserModel } from "../models/user.model"; 
+
 export interface IUserRepository {
-    getUserByEmail(email: string): Promise<IUser | null>;
-    getUserByUsername(username: string): Promise<IUser | null>;
-    // Additional
-    // 5 common database queries for entity
-    createUser(userData: Partial<IUser>): Promise<IUser>;
-    getUserById(id: string): Promise<IUser | null>;
+    // Removed getUserbyUsername as it is not in your current model
+    getUserbyEmail(email: string): Promise<IUser | null>;
+
+    // Five common CRUD functions
+    createUser(data: Partial<IUser>): Promise<IUser>; 
+    getUserById(id: string): Promise<IUser | null>; 
     getAllUsers(): Promise<IUser[]>;
-    updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null>;
-    deleteUser(id: string): Promise<boolean>;
+    updateOneUser(id: string, data: Partial<IUser>): Promise<IUser | null>; 
+    deleteOneUser(id: string): Promise<boolean | null>; 
 }
-// MongoDb Implementation of UserRepository
+
 export class UserRepository implements IUserRepository {
-    async createUser(userData: Partial<IUser>): Promise<IUser> {
-        const user = new UserModel(userData); 
+ 
+    // Create: Used for Signup
+    async createUser(data: Partial<IUser>): Promise<IUser> {
+        const user = new UserModel(data); 
         return await user.save();
     }
-    async getUserByEmail(email: string): Promise<IUser | null> {
-        const user = await UserModel.findOne({ "email": email })
-        return user;
-    }
-    async getUserByUsername(username: string): Promise<IUser | null> {
-        const user = await UserModel.findOne({ "username": username })
-        return user;
+
+    // Read: Used for Login to find the user and check password
+    async getUserbyEmail(email: string): Promise<IUser | null> {
+        const user = await UserModel.findOne({ "email": email });
+        return user; 
     }
 
+    // Read: Find a specific user by MongoDB ID
     async getUserById(id: string): Promise<IUser | null> {
-        // UserModel.findOne({ "_id": id });
         const user = await UserModel.findById(id);
-        return user;
+        return user; 
     }
+
+    // Read: Fetch all users (useful for Admin dashboards)
     async getAllUsers(): Promise<IUser[]> {
         const users = await UserModel.find();
         return users;
     }
-    async updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null> {
-        // UserModel.updateOne({ _id: id }, { $set: updateData });
-        const updatedUser = await UserModel.findByIdAndUpdate(
-            id, updateData, { new: true } // return the updated document
-        );
-        return updatedUser;
+
+    // Update: Modify user details
+    async updateOneUser(id: string, data: Partial<IUser>): Promise<IUser | null> {
+        const updatedUser = await UserModel.findByIdAndUpdate(id, data, { new: true });
+        return updatedUser; 
     }
-    async deleteUser(id: string): Promise<boolean> {
-        // UserModel.deleteOne({ _id: id });
-        const result = await UserModel.findByIdAndDelete(id);
-        return result ? true : false;
+
+    // Delete: Remove user from database
+    async deleteOneUser(id: string): Promise<boolean | null> {
+        const result = await UserModel.findByIdAndDelete(id); 
+        return result ? true : null; 
     }
 }

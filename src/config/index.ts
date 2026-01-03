@@ -6,6 +6,7 @@ export const PORT: number =
 export const MONGODB_URI: string = 
     process.env.MONGODB_URI || 'mongodb://localhost:27017/35a_backend';// this is the backup database 
 // Application level constants, with fallbacks 
+// databse path is called here as well 
 
 
 export const JWT_SECRET: string = 

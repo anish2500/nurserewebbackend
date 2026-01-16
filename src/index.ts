@@ -20,7 +20,7 @@ async function start(){
     app.listen(PORT, ()=>{
     console.log(`Server: http://localhost:${PORT}`);
     console.log(MONGODB_URI);
-});
+    }); // added closing brace here
 }
 
 start().catch((error) => console.log(error));

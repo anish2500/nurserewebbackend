@@ -19,17 +19,45 @@ export class UserService {
             throw new HttpError(403, "Email already in use");
         }
 
-        // 2. Hash the password (Complexity level: 10)
+        // 2. Handle fullName and username for cross-platform compatibility
+        let fullName = data.fullName;
+        let username = data.username;
+        
+        // Auto-generate username from email if not provided (for both web and mobile)
+        if (!username) {
+            username = data.email.split('@')[0];
+        }
+        
+        // Auto-generate fullName from username if not provided
+        if (!fullName && username) {
+            fullName = username;
+        }
+        
+        // Auto-generate fullName from email if neither provided
+        if (!fullName && !username) {
+            fullName = data.email.split('@')[0];
+            username = data.email.split('@')[0];
+        }
+
+        // 3. Hash password (Complexity level: 10)
         const hashedPassword = await bcryptjs.hash(data.password, 10);
 
-        // 3. Prepare data for Repository
+        // 4. Prepare data for Repository
         // We strip out 'confirmPassword' because the Model doesn't accept it
         const { confirmPassword, ...userData } = data;
         
-        // 4. Create the user with the hashed password
+        // Check if password and confirmPassword match
+        if (data.confirmPassword && data.password !== data.confirmPassword) {
+            throw new HttpError(400, "Passwords do not match");
+        }
+
+        // 5. Create user with hashed password and processed fields
         const newUser = await userRepository.createUser({
             ...userData,
-            password: hashedPassword
+            fullName: fullName || undefined,
+            username: username,
+            password: hashedPassword,
+            profilePicture: userData.profilePicture || undefined
         });
 
         return newUser;
@@ -63,5 +91,31 @@ export class UserService {
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
 
         return { token, user };
+    }
+
+    /**
+     * Update User Profile
+     */
+    async updateUserProfile(userId: string, updateData: any) {
+        // Find user by ID
+        const user = await userRepository.getUserById(userId);
+        if (!user) {
+            throw new HttpError(404, "User not found");
+        }
+
+        // Update user with new data
+        const updatedUser = await userRepository.updateOneUser(userId, updateData);
+        return updatedUser;
+    }
+
+    /**
+     * Get User by ID
+     */
+    async getUserById(userId: string) {
+        const user = await userRepository.getUserById(userId);
+        if (!user) {
+            throw new HttpError(404, "User not found");
+        }
+        return user;
     }
 }

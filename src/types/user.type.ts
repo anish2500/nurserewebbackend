@@ -6,9 +6,11 @@ import z from "zod";
  * in alignment with your MongoDB Model.
  */
 export const UserSchema = z.object({
-    fullName: z.string().min(2, "Full name is required"),
-    email: z.email("Invalid email format"),
+    fullName: z.string().min(2, "Full name is required").optional(),
+    username: z.string().min(2, "Username is required").optional(),
+    email: z.string().email("Invalid email format"),
     password: z.string().min(6, "Password must be at least 6 characters"),
+    profilePicture: z.string().url("Invalid URL format").optional(),
     role: z.enum(["user", "admin"]).default("user"),
 });
 

@@ -4,7 +4,12 @@ import { UserType } from "../types/user.type";
 const UserSchema: Schema = new Schema({
     fullName: { 
         type: String, 
-        required: true, 
+        required: false, 
+        trim: true 
+    }, 
+    username: { 
+        type: String, 
+        required: false, 
         trim: true 
     }, 
     email: { 
@@ -19,6 +24,11 @@ const UserSchema: Schema = new Schema({
         required: true, 
         minLength: 6 
     },
+    profilePicture: {
+        type: String,
+        required: false,
+        trim: true
+    },
     role: {
         type: String,
         enum: ['user', 'admin'],
@@ -30,6 +40,8 @@ const UserSchema: Schema = new Schema({
 
 export interface IUser extends UserType, Document {
     fullName: any; 
+    username: any;
+    profilePicture: string;
     _id: mongoose.Types.ObjectId; 
     createdAt: Date; 
     updatedAt: Date;

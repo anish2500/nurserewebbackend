@@ -1,25 +1,30 @@
 import { z } from "zod";
 
-
 export const CreateUserDTO = z.object({
-    fullName: z.string().min(2, "Full name is required"),
+    fullName: z.string().min(2, "Full name is required").optional().nullable(),
+    username: z.string().min(2, "Username is required").optional().nullable(),
     email: z.string().email("Invalid email format"),
     password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string().min(6, "Confirm password is required"),
+    confirmPassword: z.string().min(6, "Confirm password is required").optional(),
+    profilePicture: z.string().url("Invalid URL format").optional().nullable(),
     role: z.enum(["user", "admin"]).optional().default("user")
 }).refine(
-    (data) => data.password === data.confirmPassword, 
+    (data) => {
+        // Only validate password matching if confirmPassword is provided
+        if (data.confirmPassword) {
+            return data.password === data.confirmPassword;
+        }
+        return true;
+    }, 
     {
         message: "Passwords do not match",
-        path: ["confirmPassword"] // Error will be attached to this field
+        path: ["confirmPassword"]
     }
 );
 
 export type CreateUserDTO = z.infer<typeof CreateUserDTO>;
 
-
 export const LoginUserDTO = z.object({
-    // Changed z.email() to z.string().email() as per Zod's standard syntax
     email: z.string().email("Invalid email format"),
     password: z.string().min(6, "Password is required")
 });

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/auth.controller";
 import { UserService } from "../services/user.service";
+import { uploadProfilePicture } from "../middlewares/upload.middleware";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
 
@@ -36,14 +37,22 @@ router.post("/register", authController.register.bind(authController));
 router.post("/login", authController.login.bind(authController));
 
 // Profile management routes (integrated into auth)
-router.put("/profile", verifyToken, async (req: any, res: any) => {
+router.put("/profile", verifyToken, uploadProfilePicture.single("profilePicture"), async (req: any, res: any) => {
     try {
         const userId = req.user.id;
-        const { profilePicture, fullName, username } = req.body;
+        const { fullName, username } = req.body;
         
         // Prepare update data - only include provided fields
         const updateData: any = {};
-        if (profilePicture !== undefined) updateData.profilePicture = profilePicture;
+        
+        // If a file was uploaded, use its path
+        if (req.file) {
+            updateData.profilePicture = req.file.path;
+        } else if (req.body.profilePicture !== undefined) {
+            // If no file but profilePicture in body (for string URLs)
+            updateData.profilePicture = req.body.profilePicture;
+        }
+        
         if (fullName !== undefined) updateData.fullName = fullName;
         if (username !== undefined) updateData.username = username;
         

@@ -45,9 +45,9 @@ router.put("/profile", verifyToken, uploadProfilePicture.single("profilePicture"
         // Prepare update data - only include provided fields
         const updateData: any = {};
         
-        // If a file was uploaded, use its path
+        // If a file was uploaded, use its filename
         if (req.file) {
-            updateData.profilePicture = req.file.path;
+            updateData.profilePicture = req.file.filename;
         } else if (req.body.profilePicture !== undefined) {
             // If no file but profilePicture in body (for string URLs)
             updateData.profilePicture = req.body.profilePicture;

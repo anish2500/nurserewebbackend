@@ -52,9 +52,6 @@ const fileFilter = (
   cb(null, true);
 };
 
-// ================================
-// MULTER INSTANCE
-// ================================
 export const uploadProfilePicture = multer({
   storage,
   fileFilter,

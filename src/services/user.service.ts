@@ -109,6 +109,13 @@ export class UserService {
     }
 
     /**
+     * Update User (alias for updateUserProfile)
+     */
+    async updateUser(userId: string, updateData: any) {
+        return await this.updateUserProfile(userId, updateData);
+    }
+
+    /**
      * Get User by ID
      */
     async getUserById(userId: string) {
@@ -117,5 +124,26 @@ export class UserService {
             throw new HttpError(404, "User not found");
         }
         return user;
+    }
+
+    /**
+     * Get All Users
+     */
+    async getAllUsers() {
+        const users = await userRepository.getAllUsers();
+        return users;
+    }
+
+    /**
+     * Delete User
+     */
+    async deleteUser(userId: string) {
+        const user = await userRepository.getUserById(userId);
+        if (!user) {
+            throw new HttpError(404, "User not found");
+        }
+
+        const result = await userRepository.deleteOneUser(userId);
+        return result;
     }
 }

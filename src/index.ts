@@ -3,7 +3,9 @@ import bodyParser from 'body-parser';
 import { connectDatabase } from './database/mongodb';
 import { MONGODB_URI, PORT } from './config';
 import authRoutes from "./routes/auth.route";
+import adminRoutes from "./routes/admin/admin.routes";
 import cors from 'cors';
+import path from 'path';
 
 const app: Application = express();
 const corsOptions = {
@@ -22,6 +24,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/profile_pictures', express.static(path.join(process.cwd(), 'public', 'profile_pictures')));
+app.use(express.static(path.join(process.cwd(), 'public', 'profile_pictures')));
 app.get('/', (req: Request, res: Response) => {
     return res.status(200).json({ success: "true", message: "Welcome to the API" });
 });

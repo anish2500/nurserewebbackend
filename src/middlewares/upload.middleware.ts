@@ -44,10 +44,10 @@ const fileFilter = (
     return cb(new Error("Only image files are allowed."));
   }
 
-  // 2. Extension check
-  if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-    return cb(new Error("Image format not supported."));
-  }
+  // // 2. Extension check
+  // if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+  //   return cb(new Error("Image format not supported."));
+  // }
 
   cb(null, true);
 };

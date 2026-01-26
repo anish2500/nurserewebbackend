@@ -108,7 +108,7 @@ export class AuthController {
                 });
             }
             if (req.file) {
-                parsedData.data.profilePicture = `uploads/${req.file.filename}`;
+                parsedData.data.profilePicture = req.file.filename;
             }
             const updatedUser = await userService.updateUser(userId, parsedData.data);
             return res.status(200).json({

@@ -3,18 +3,22 @@ import { JWT_SECRET } from "../config";
 import { Request, Response, NextFunction } from "express"; 
 import { HttpError } from "../errors/http-error";
 import { UserRepository } from "../repositories/user.repository";
+import { AdminRepository } from "../repositories/admin/admin.repository";
 import { IUser } from "../models/user.model";
+import { IAdmin } from "../models/admin/admin.model";
 
-// Extend Express Request to include user
+// Extend Express Request to include user and admin
 declare global {
     namespace Express {
         interface Request {
-            user?: IUser; 
+            user?: IUser | IAdmin; 
+            isAdmin?: boolean;
         }
     }
 }
 
-const userRepository = new UserRepository(); 
+const userRepository = new UserRepository();
+const adminRepository = new AdminRepository(); 
 
 export const authorizedMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -34,14 +38,26 @@ export const authorizedMiddleware = async (req: Request, res: Response, next: Ne
             throw new HttpError(401, "Invalid session, please login again");
         }
 
-        // 3. Find User in DB
-        const user = await userRepository.getUserById(decodedToken.id); 
+        // 3. Check both User and Admin collections
+        let user = await userRepository.getUserById(decodedToken.id);
+        let isAdmin = false;
+
+        if (!user) {
+            // If not found in User collection, check Admin collection
+            const admin = await adminRepository.getUserById(decodedToken.id);
+            if (admin) {
+                user = admin;
+                isAdmin = true;
+            }
+        }
+
         if (!user) {
             throw new HttpError(401, "User no longer exists");
         }
 
-        // 4. Attach user to request and move to the next step
-        req.user = user; 
+        // 4. Attach user and admin flag to request
+        req.user = user;
+        req.isAdmin = isAdmin;
         next(); 
 
     } catch (error: any) {
@@ -52,4 +68,23 @@ export const authorizedMiddleware = async (req: Request, res: Response, next: Ne
             message: message || "Unauthorized"
         });
     }
+};
+
+export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+        return res.status(401).json({
+            success: false,
+            message: 'Unauthorized: No user found'
+        });
+    }
+ 
+    // Check either the role field or the isAdmin flag
+    if (req.user.role !== 'admin' && !req.isAdmin) {
+        return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Admin access required'
+        });
+    }
+ 
+    next();
 };

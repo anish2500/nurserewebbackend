@@ -1,46 +1,33 @@
 import { Router } from "express";
 import { AdminController } from "../../controllers/admin/admin.controller";
-import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../../config";
+import { authorizedMiddleware, isAdmin } from "../../middlewares/authorization.middleware";
+import { uploadProfilePicture } from "../../middlewares/upload.middleware";
 
 const router = Router();
 const adminController = new AdminController();
 
-const verifyToken = (req: any, res: any, next: any) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({
-            success: false,
-            message: "No token provided"
-        });
-    }
-
-    const token = authHeader.split(' ')[1];
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.status(401).json({
-            success: false,
-            message: "Invalid token"
-        });
-    }
-};
-
+// Public admin routes (no admin access required)
 router.post("/register", adminController.registerAdmin.bind(adminController));
 router.post("/login", adminController.loginAdmin.bind(adminController));
 
-router.get("/profile", verifyToken, adminController.getAdminProfile.bind(adminController));
-router.put("/profile", verifyToken, adminController.updateAdminProfile.bind(adminController));
+// Apply authentication to all admin routes
+router.use(authorizedMiddleware);
 
-router.get("/", verifyToken, adminController.getAllAdmins.bind(adminController));
-router.get("/:adminId", verifyToken, adminController.getAdminById.bind(adminController));
-router.delete("/:adminId", verifyToken, adminController.deleteAdmin.bind(adminController));
+// Apply admin access check to protected routes
+router.use(isAdmin);
+
+// Admin profile and management routes (protected)
+router.get("/profile", adminController.getAdminProfile.bind(adminController));
+router.put("/profile", adminController.updateAdminProfile.bind(adminController));
+router.get("/", adminController.getAllAdmins.bind(adminController));
+router.get("/:adminId", adminController.getAdminById.bind(adminController));
+router.delete("/:adminId", adminController.deleteAdmin.bind(adminController));
 
 // User Management Routes for Admin
-router.get("/users/all", verifyToken, adminController.getAllUsers.bind(adminController));
-router.get("/users/:userId", verifyToken, adminController.getUserById.bind(adminController));
-router.delete("/users/:userId", verifyToken, adminController.deleteUser.bind(adminController));
+router.get("/users/all", adminController.getAllUsers.bind(adminController));
+router.get("/users/:userId", adminController.getUserById.bind(adminController));
+router.post("/users", uploadProfilePicture.single('profilePicture'), adminController.createUser.bind(adminController));
+router.put("/users/:userId", uploadProfilePicture.single('profilePicture'), adminController.updateUser.bind(adminController));
+router.delete("/users/:userId", adminController.deleteUser.bind(adminController));
 
 export default router;

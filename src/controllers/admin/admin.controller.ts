@@ -195,4 +195,64 @@ export class AdminController {
             next(error);
         }
     }
+
+    async createUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userData = req.body;
+            
+            // Handle file upload if present
+            if (req.file) {
+                userData.profilePicture = req.file.filename;
+            }
+            
+            const newUser = await userService.registerUser(userData);
+            
+            // Construct full image URL for response
+            if (newUser.profilePicture) {
+                newUser.profilePicture = `${req.protocol}://${req.get('host')}/profile_pictures/${newUser.profilePicture}`;
+            }
+            
+            res.status(201).json({
+                success: true,
+                message: "User created successfully",
+                data: newUser
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updateUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId } = req.params;
+            const updateData = req.body;
+            
+            // Handle file upload if present
+            if (req.file) {
+                updateData.profilePicture = req.file.filename;
+            }
+            
+            const updatedUser = await userService.updateUser(userId, updateData);
+            
+            if (!updatedUser) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found"
+                });
+            }
+            
+            // Construct full image URL for response
+            if (updatedUser.profilePicture) {
+                updatedUser.profilePicture = `${req.protocol}://${req.get('host')}/profile_pictures/${updatedUser.profilePicture}`;
+            }
+            
+            res.status(200).json({
+                success: true,
+                message: "User updated successfully",
+                data: updatedUser
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

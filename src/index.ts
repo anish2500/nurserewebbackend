@@ -7,6 +7,7 @@ import adminRoutes from "./routes/admin/admin.routes";
 import cors from 'cors';
 import path from 'path';
 
+
 const app: Application = express();
 const corsOptions = {
     origing : ['http://localhost: 3000', 'http://localhost:3003', 'http://localhost:3005',
@@ -25,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/users', adminRoutes);
 app.use('/profile_pictures', express.static(path.join(process.cwd(), 'public', 'profile_pictures')));
 app.use(express.static(path.join(process.cwd(), 'public', 'profile_pictures')));
 app.get('/', (req: Request, res: Response) => {

@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { AdminService } from "../../services/admin/admin.service";
-import { UserService } from "../../services/user.service";
-import { HttpError } from "../../errors/http-error";
 import { IAdmin } from "../../models/admin/admin.model";
-import { IUser } from "../../models/user.model";
+import { UserService } from "../../services/user.service";
+import {QueryParams} from "../../types/query.type";
+
+
 
 const adminService = new AdminService();
 const userService = new UserService();
@@ -147,20 +148,17 @@ export class AdminController {
     // User Management Methods for Admin
     async getAllUsers(req: Request, res: Response, next: NextFunction) {
         try {
-            const users = await userService.getAllUsers();
-            
-            const usersResponse = users.map((user: IUser) => {
-                const { password, ...userData } = user.toObject();
-                return userData;
-            });
-            
-            res.status(200).json({
-                success: true,
-                message: "All users retrieved successfully",
-                data: usersResponse
-            });
-        } catch (error) {
-            next(error);
+            const { page, size, search }: QueryParams = req.query;
+            const { users, pagination } = await adminService.getAllUsers(
+                page, size, search
+            );
+            return res.status(200).json(
+                { success: true, data: users, pagination: pagination, message: "All Users Retrieved" }
+            );
+        } catch (error: Error | any) {
+            return res.status(error.statusCode ?? 500).json(
+                { success: false, message: error.message || "Internal Server Error" }
+            );
         }
     }
 

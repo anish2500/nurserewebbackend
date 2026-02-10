@@ -1,5 +1,5 @@
 import { IUser, UserModel } from "../models/user.model"; 
-
+import { QueryFilter } from "mongoose";
 export interface IUserRepository {
     // Removed getUserbyUsername as it is not in your current model
     getUserbyEmail(email: string): Promise<IUser | null>;
@@ -7,7 +7,9 @@ export interface IUserRepository {
     // Five common CRUD functions
     createUser(data: Partial<IUser>): Promise<IUser>; 
     getUserById(id: string): Promise<IUser | null>; 
-    getAllUsers(): Promise<IUser[]>;
+     getAllUsers(
+        page: number, size: number, search?: string
+    ): Promise<{users: IUser[], total: number}>;
     updateOneUser(id: string, data: Partial<IUser>): Promise<IUser | null>; 
     deleteOneUser(id: string): Promise<boolean | null>; 
 }
@@ -33,15 +35,34 @@ export class UserRepository implements IUserRepository {
     }
 
     // Read: Fetch all users (useful for Admin dashboards)
-    async getAllUsers(): Promise<IUser[]> {
-        const users = await UserModel.find();
-        return users;
+     async getAllUsers(
+        page: number, size: number, search?: string
+    ): Promise<{users: IUser[], total: number}> {
+        const filter: QueryFilter<IUser> = {};
+        if (search) {
+            filter.$or = [
+                { username: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { firstName: { $regex: search, $options: 'i' } },
+                { lastName: { $regex: search, $options: 'i' } },
+            ];
+        }
+        const [users, total] = await Promise.all([
+            UserModel.find(filter)
+                .skip((page - 1) * size)
+                .limit(size),
+            UserModel.countDocuments(filter)
+        ]);
+        return { users, total };
     }
 
     // Update: Modify user details
-    async updateOneUser(id: string, data: Partial<IUser>): Promise<IUser | null> {
-        const updatedUser = await UserModel.findByIdAndUpdate(id, data, { new: true });
-        return updatedUser; 
+     async updateOneUser(id: string, updateData: Partial<IUser>): Promise<IUser | null> {
+        // UserModel.updateOne({ _id: id }, { $set: updateData });
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            id, updateData, { new: true } // return the updated document
+        );
+        return updatedUser;
     }
 
     // Delete: Remove user from database

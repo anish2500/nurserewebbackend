@@ -3,6 +3,7 @@ import { AuthController } from "../controllers/auth.controller";
 import { uploadProfilePicture } from "../middlewares/upload.middleware";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
+import { authorizedMiddleware } from "../middlewares/authorization.middleware";
 
 const authController = new AuthController();
 const router = Router(); 
@@ -37,5 +38,12 @@ router.post("/login", authController.login.bind(authController));
 // Profile management routes (using controller methods)
 router.get("/profile", verifyToken, authController.getProfile.bind(authController));
 router.put("/profile", verifyToken, uploadProfilePicture.single("profilePicture"), authController.updateProfile.bind(authController));
+
+
+router.post("/request-password-reset", authController.sendResetPasswordEmail);
+router.post("/reset-password/:token", authController.resetPassword);
+
+
+router.get("/whoami", authorizedMiddleware, authController.getProfile);
 
 export default router;

@@ -7,7 +7,7 @@ import { JWT_SECRET } from "../config";
 import { sendEmail } from "../config/email";
 
 
-const CLIENT_URL = process.env.CLIENT_URL as string; 
+const CLIENT_URL = process.env.CLIENT_URI as string; 
 
 // Instantiate the repository to use its methods
 const userRepository = new UserRepository();

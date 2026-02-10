@@ -7,4 +7,4 @@ const router = Router();
 router.get("/", plantController.getAllPlant);
 router.get("/:id", plantController.getPlantDetails);
 
-export default router; 
+export default router;

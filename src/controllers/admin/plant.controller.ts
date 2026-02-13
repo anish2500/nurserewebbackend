@@ -19,8 +19,9 @@ export class AdminPlantController {
       }
 
       if (req.file) {
-        parsedData.data.plantImage = [`/uploads/${req.file.filename}`];
-      }
+        parsedData.data.plantImage = [req.file.filename];
+        }
+
 
       const plantData: CreatePlantDTO = parsedData.data;
       const newPlant = await adminPlantService.createPlant(plantData);
@@ -91,7 +92,7 @@ export class AdminPlantController {
       }
 
       if (req.file) {
-        parsedData.data.plantImage = [`/uploads/${req.file.filename}`];
+        parsedData.data.plantImage = [req.file.filename];
       }
 
       const updateData: UpdatePlantDTO = parsedData.data;

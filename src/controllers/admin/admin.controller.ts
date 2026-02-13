@@ -4,7 +4,7 @@ import { IAdmin } from "../../models/admin/admin.model";
 import { UserService } from "../../services/user.service";
 import {QueryParams} from "../../types/query.type";
 
-
+import mongoose from "mongoose";
 
 const adminService = new AdminService();
 const userService = new UserService();
@@ -162,37 +162,67 @@ export class AdminController {
         }
     }
 
-    async getUserById(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { userId } = req.params;
-            const user = await userService.getUserById(userId);
-            
-            const { password, ...userResponse } = user.toObject();
-            
-            res.status(200).json({
-                success: true,
-                message: "User retrieved successfully",
-                data: userResponse
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
+  async getUserById(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { userId } = req.params;
 
-    async deleteUser(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { userId } = req.params;
-            const result = await userService.deleteUser(userId);
-            
-            res.status(200).json({
-                success: true,
-                message: "User deleted successfully",
-                data: result
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Invalid user ID" 
             });
-        } catch (error) {
-            next(error);
         }
+
+        const user = await userService.getUserById(userId);
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "User not found" 
+            });
+        }
+
+        const { password, ...userResponse } = user.toObject();
+        res.status(200).json({
+            success: true,
+            message: "User retrieved successfully",
+            data: userResponse
+        });
+    } catch (error) {
+        next(error);
     }
+}
+
+ async deleteUser(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { userId } = req.params;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Invalid user ID" 
+            });
+        }
+
+        const result = await userService.deleteUser(userId);
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "User deleted successfully",
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+}
 
     async createUser(req: Request, res: Response, next: NextFunction) {
         try {
@@ -221,37 +251,44 @@ export class AdminController {
         }
     }
 
-    async updateUser(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { userId } = req.params;
-            const updateData = req.body;
-            
-            // Handle file upload if present
-            if (req.file) {
-                updateData.profilePicture = req.file.filename;
-            }
-            
-            const updatedUser = await userService.updateUser(userId, updateData);
-            
-            if (!updatedUser) {
-                return res.status(404).json({
-                    success: false,
-                    message: "User not found"
-                });
-            }
-            
-            // Construct full image URL for response
-            if (updatedUser.profilePicture) {
-                updatedUser.profilePicture = `${req.protocol}://${req.get('host')}/profile_pictures/${updatedUser.profilePicture}`;
-            }
-            
-            res.status(200).json({
-                success: true,
-                message: "User updated successfully",
-                data: updatedUser
+async updateUser(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { userId } = req.params;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Invalid user ID" 
             });
-        } catch (error) {
-            next(error);
         }
+
+        const updateData = req.body;
+        if (req.file) {
+            updateData.profilePicture = req.file.filename;
+        }
+
+        const updatedUser = await userService.updateUser(userId, updateData);
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Construct full image URL for response
+        if (updatedUser.profilePicture) {
+            updatedUser.profilePicture = `${req.protocol}://${req.get('host')}/profile_pictures/${updatedUser.profilePicture}`;
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "User updated successfully",
+            data: updatedUser
+        });
+    } catch (error) {
+        next(error);
     }
+}
 }

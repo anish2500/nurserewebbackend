@@ -24,13 +24,15 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin/plants', adminPlantRoutes);
-app.use('/api/admin/users', adminRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/profile_pictures', express.static(path.join(process.cwd(), 'public', 'profile_pictures')));
 app.use(express.static(path.join(process.cwd(), 'public', 'profile_pictures')));
 app.use('/api/plants', plantRoutes);
+app.use('/plant_images', express.static(path.join(process.cwd(), 'public', 'plant_images')));
+
 app.get('/', (req: Request, res: Response) => {
     return res.status(200).json({ success: "true", message: "Welcome to the API" });
 });

@@ -10,10 +10,10 @@ let plantService  = new PlantService();
 export class PlantController {
     async getAllPlant(req: Request, res: Response){
         try {
-            const {page, size, search} : QueryParams = req.query; 
+            const {page, size, search, category, minPrice, maxPrice} : QueryParams = req.query; 
 
             const {plant, pagination} = 
-                await plantService.getAllPlants(page, size, search);
+                await plantService.getAllPlants(page, size, search, category, minPrice ? parseInt(minPrice) : undefined, maxPrice ? parseInt(maxPrice) : undefined);
 
 
             return res.status(200).json({

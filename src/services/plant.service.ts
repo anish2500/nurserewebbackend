@@ -7,7 +7,7 @@ import { HttpError } from "../errors/http-error";
 let plantRepository = new PlantRepository();
 
 export class PlantService {
-    async getAllPlants (page?: string, size?: string, search?: string){
+    async getAllPlants (page?: string, size?: string, search?: string, category?:string, minPrice?: number, maxPrice?:number){
         const pageNumber = page? parseInt(page) : 1; 
         
         const pageSize = size ? parseInt(size) : 12; 
@@ -15,7 +15,10 @@ export class PlantService {
         const {plant, total} = await plantRepository.getAllPlant(
             pageNumber, 
             pageSize, 
-            search
+            search, 
+            category, 
+            minPrice, 
+            maxPrice
         );
 
         return {

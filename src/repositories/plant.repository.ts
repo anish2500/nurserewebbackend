@@ -44,7 +44,7 @@ export class PlantRepository implements IPlantRepository {
         return plant; 
     }
 
-    async getAllPlant(page: number, size: number, search?: string): Promise<{ plant: IPlant[]; total: number; }> {
+    async getAllPlant(page: number, size: number, search?: string ,category?:string,  minPrice?:number, maxPrice?:number): Promise<{ plant: IPlant[]; total: number; }> {
         
         const filter : QueryFilter<IPlant>  = {};
 
@@ -52,9 +52,19 @@ export class PlantRepository implements IPlantRepository {
             filter.$or = [
                 {name: {$regex : search, $options: "i"}},
                 {description : {$regex : search, $options : "i"}},
-                {category : {$regex : search, $options : "i"}},
+                
             ];
         }
+        if(category){
+            filter.category =category;
+        }
+
+        if(minPrice!==undefined ||maxPrice!==undefined){
+            filter.price = {};
+            if(minPrice !==undefined) filter.price.$gte = minPrice;
+            if(maxPrice !==undefined) filter.price.$lte = maxPrice; 
+        }
+        
 
         const [plant, total] = await Promise.all([
             PlantModel.find(filter)
@@ -63,6 +73,8 @@ export class PlantRepository implements IPlantRepository {
                 .limit(size),
               PlantModel.countDocuments(filter),  
         ]);
+
+       
 
         return {plant, total};
     }

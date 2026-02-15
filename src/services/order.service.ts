@@ -1,0 +1,26 @@
+import { OrderModel } from "../models/order.model";
+import { HttpError } from "../errors/http-error";
+
+export class OrderService {
+    async createOrder(userId: string, items: any[], totalAmount: number) {
+        const order = await OrderModel.create({
+            userId,
+            items,
+            totalAmount
+        });
+        return order;
+    }
+
+    async getOrdersByUser(userId: string) {
+        const orders = await OrderModel.find({ userId }).sort({ createdAt: -1 });
+        return orders;
+    }
+
+    async getOrderById(userId: string, orderId: string) {
+        const order = await OrderModel.findOne({ _id: orderId, userId });
+        if (!order) {
+            throw new HttpError(404, "Order not found");
+        }
+        return order;
+    }
+}

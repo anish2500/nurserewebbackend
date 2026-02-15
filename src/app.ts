@@ -7,6 +7,7 @@ import path from 'path';
 import plantRoutes from './routes/plant.route';
 import adminPlantRoutes from './routes/admin/plant.route';
 import cartRoutes from "./routes/cart.route";
+import orderRoutes from "./routes/order.route";
 
 
 const app: Application = express();
@@ -34,6 +35,7 @@ app.use(express.static(path.join(process.cwd(), 'public', 'profile_pictures')));
 app.use('/api/plants', plantRoutes);
 app.use('/plant_images', express.static(path.join(process.cwd(), 'public', 'plant_images')));
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     return res.status(200).json({ success: "true", message: "Welcome to the API" });

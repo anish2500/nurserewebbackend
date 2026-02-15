@@ -70,4 +70,23 @@ export class OrderController {
             });
         }
     }
+
+    async clearOrder(req: Request, res: Response){
+        try {
+            const userId = req.user?._id?.toString();
+            const {orderId} = req.params; 
+
+            await orderService.clearOrder(userId!, orderId);
+
+            return res.status(200).json({
+                success: true,
+                message: "Order cancelled successfully"
+            });
+        }catch (error: any){
+            return res.status(error.statusCode || 500).json({
+                success: false, 
+                message: error.message || "Internal Server Error"
+            });
+        }
+    }
 }

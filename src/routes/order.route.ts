@@ -10,5 +10,6 @@ router.use(authorizedMiddleware);
 router.post("/", orderController.createOrder);
 router.get("/", orderController.getOrders);
 router.get("/:orderId", orderController.getOrderById);
+router.delete("/:orderId", orderController.clearOrder);
 
 export default router;

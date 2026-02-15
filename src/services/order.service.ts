@@ -12,15 +12,25 @@ export class OrderService {
     }
 
     async getOrdersByUser(userId: string) {
-        const orders = await OrderModel.find({ userId }).sort({ createdAt: -1 });
+        const orders = await OrderModel.find({ userId }).sort({ createdAt: -1 })
+        .populate('items.plantId', 'name price plantImage');
         return orders;
     }
 
     async getOrderById(userId: string, orderId: string) {
-        const order = await OrderModel.findOne({ _id: orderId, userId });
+        const order = await OrderModel.findOne({ _id: orderId, userId })
+        .populate('items.plantId', 'name price plantImage');
         if (!order) {
             throw new HttpError(404, "Order not found");
         }
         return order;
+    }
+
+    async clearOrder(userId: string, orderId: string){
+        const order = await OrderModel.findOneAndDelete({_id: orderId, userId});
+        if(!order){
+            throw new HttpError(404, "Order not found");
+        }
+        return order; 
     }
 }

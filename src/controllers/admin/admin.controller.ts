@@ -3,11 +3,14 @@ import { AdminService } from "../../services/admin/admin.service";
 import { IAdmin } from "../../models/admin/admin.model";
 import { UserService } from "../../services/user.service";
 import {QueryParams} from "../../types/query.type";
+import { OrderService } from "../../services/order.service";
+
 
 import mongoose from "mongoose";
 
 const adminService = new AdminService();
 const userService = new UserService();
+const orderService = new OrderService();
 
 export class AdminController {
     async registerAdmin(req: Request, res: Response, next: NextFunction) {
@@ -289,6 +292,39 @@ async updateUser(req: Request, res: Response, next: NextFunction) {
         });
     } catch (error) {
         next(error);
+    }
+}
+
+async getAllOrders (req: Request, res: Response, next: NextFunction){
+    try {
+        const orders = await orderService.getAllOrders();
+        return res.status(200).json({
+            sucess: true, 
+            message: "All Orders retrieved Successfully",
+            data: orders
+        });
+    }catch (error : any){
+        return res.status(error.statusCode || 500).json ({
+            success: false, 
+            message: error.message || "Internal Server Error"
+        });
+    }
+}
+
+async getOrderByIdAdmin(req: Request, res: Response, next : NextFunction){
+    try {
+        const {orderId} = req.params; 
+        const order  = await orderService.getOrderByIdAdmin(orderId);
+        return res.status(200).json({
+            success: true, 
+            message: "Order retrieved Successfully", 
+            data: order
+        });
+    } catch(error: any){
+        return res.status(error.statusCode || 500).json({
+            sucess: false, 
+            message: error.message || "Internal Server Error"
+        });
     }
 }
 }

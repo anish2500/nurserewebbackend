@@ -33,4 +33,25 @@ export class OrderService {
         }
         return order; 
     }
+
+    async getAllOrders(){
+        const orders = await OrderModel.find()
+        .sort({ createdAt: -1})
+        .populate('items.plantId', 'name price plantImage')
+        .populate('userId', 'fullName email username');
+
+        return orders; 
+    }
+
+    async getOrderByIdAdmin(orderId: string){
+        const order = await OrderModel.findById(orderId)
+            .populate('items.plantId', 'name price plantImage')
+            .populate('userId', 'fullName email username');
+
+        if (!order){
+            throw new HttpError(404, "Order not found");
+        }    
+        return order; 
+    }
+
 }

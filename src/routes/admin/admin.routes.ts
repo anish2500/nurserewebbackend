@@ -30,4 +30,9 @@ router.post("/users", uploadProfilePicture.single('profilePicture'), adminContro
 router.put("/users/:userId", uploadProfilePicture.single('profilePicture'), adminController.updateUser.bind(adminController));
 router.delete("/users/:userId", adminController.deleteUser.bind(adminController));
 
+
+//Order Management Routes for Admin 
+router.get("/orders/all", adminController.getAllOrders.bind(adminController));
+router.get("/orders/:orderId", adminController.getOrderByIdAdmin.bind(adminController));
+
 export default router;

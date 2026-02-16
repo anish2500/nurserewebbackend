@@ -299,7 +299,7 @@ async getAllOrders (req: Request, res: Response, next: NextFunction){
     try {
         const orders = await orderService.getAllOrders();
         return res.status(200).json({
-            sucess: true, 
+            success: true, 
             message: "All Orders retrieved Successfully",
             data: orders
         });

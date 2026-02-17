@@ -11,7 +11,7 @@ export class FavoriteService{
         const favorite = await favoriteRepository.getFavoriteByUserId(userId);
 
         if(!favorite){
-            return favoriteRepository.addPlant(userId, "");
+            return { userId, plants: [] };
         }
 
         return favorite; 

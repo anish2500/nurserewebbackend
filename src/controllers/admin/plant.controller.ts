@@ -137,4 +137,31 @@ export class AdminPlantController {
       });
     }
   }
+
+  async restockPlant(req: Request, res: Response, next: NextFunction) {
+    try {
+      const plantId = req.params.id;
+      const { stock } = req.body;
+
+      if (stock === undefined || typeof stock !== 'number' || stock < 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Valid stock amount is required",
+        });
+      }
+
+      const plant = await adminPlantService.restockPlant(plantId, stock);
+
+      return res.status(200).json({
+        success: true,
+        message: "Plant restocked successfully",
+        data: plant,
+      });
+    } catch (error: any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
 }

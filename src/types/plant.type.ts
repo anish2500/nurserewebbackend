@@ -9,6 +9,7 @@ export const PlantSchema   = z.object({
     ),
 
     price : z.coerce.number().positive("Price must be a positive number"),
+    stock : z.coerce.number().int().min(0, "Stock cannot be negative").default(0),
     plantImage : z.array(z.string()).optional(),
 
 });

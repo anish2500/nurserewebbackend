@@ -7,6 +7,7 @@ export const CreatePlantDTO = PlantSchema.pick(
         description: true, 
         category: true, 
         price: true, 
+        stock: true, 
         plantImage : true, 
     }
 );

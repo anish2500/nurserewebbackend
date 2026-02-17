@@ -27,6 +27,11 @@ const PlantSchema : Schema = new Schema <PlantType>(
             required: true, 
 
         },
+        stock: {
+            type: Number, 
+            required: true, 
+            default: 0,
+        },
 
         plantImage : [
             {

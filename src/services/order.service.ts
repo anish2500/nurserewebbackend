@@ -1,8 +1,32 @@
 import { OrderModel } from "../models/order.model";
 import { HttpError } from "../errors/http-error";
+import { PlantRepository } from "../repositories/plant.repository";
+
+const plantRepository = new PlantRepository();
 
 export class OrderService {
     async createOrder(userId: string, items: any[], totalAmount: number) {
+        // Check stock availability for each item
+        for (const item of items) {
+            const plant = await plantRepository.getPlantById(item.plantId);
+            if (!plant) {
+                throw new HttpError(404, `Plant not found`);
+            }
+            if (plant.stock < item.quantity) {
+                throw new HttpError(400, `Insufficient stock for ${plant.name}. Available: ${plant.stock}`);
+            }
+        }
+
+        // Decrement stock for each item
+        for (const item of items) {
+            const plant = await plantRepository.getPlantById(item.plantId);
+            if (plant) {
+                await plantRepository.updatePlant(item.plantId, {
+                    stock: plant.stock - item.quantity
+                });
+            }
+        }
+
         const order = await OrderModel.create({
             userId,
             items,

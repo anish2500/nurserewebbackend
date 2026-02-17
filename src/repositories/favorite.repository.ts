@@ -10,6 +10,10 @@ export interface IFavoriteRepository {
 
 export class FavoriteRepository implements IFavoriteRepository{
     async addPlant(userId: string, plantId: string): Promise<IFavorite> {
+        if (!plantId || plantId.trim() === "") {
+            throw new Error("Plant ID is required");
+        }
+
         let favorite = await FavoriteModel.findOne({userId});
 
         if(!favorite){

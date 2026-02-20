@@ -46,4 +46,7 @@ router.put(
 // Delete plant by ID
 router.delete("/:id", validatePlantId, adminPlantController.deletePlant.bind(adminPlantController));
 
+// Restock plant
+router.patch("/:id/restock", validatePlantId, adminPlantController.restockPlant.bind(adminPlantController));
+
 export default router;

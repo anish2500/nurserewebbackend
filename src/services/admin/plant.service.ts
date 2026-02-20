@@ -63,4 +63,12 @@ export class AdminPlantService {
     const plant = await plantRepository.deleteOnePlant(id);
     return plant;
   }
+
+  async restockPlant(id: string, stock: number) {
+    const plant = await plantRepository.getPlantById(id);
+    if (!plant) {
+      throw new HttpError(404, "Plant not found");
+    }
+    return await plantRepository.updatePlant(id, { stock });
+  }
 }

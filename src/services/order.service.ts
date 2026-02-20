@@ -2,11 +2,18 @@ import { OrderModel } from "../models/order.model";
 import { HttpError } from "../errors/http-error";
 
 export class OrderService {
-    async createOrder(userId: string, items: any[], totalAmount: number) {
+    async createOrder(userId: string, items: any[], totalAmount: number, paymentInfo?: {
+        paymentMethod?: string; 
+        transactionId?: string; 
+    }) {
         const order = await OrderModel.create({
             userId,
             items,
-            totalAmount
+            totalAmount, 
+            paymentMethod: paymentInfo?.paymentMethod || 'cash_on_delivery', 
+            transactionId: paymentInfo?.transactionId, 
+            paymentStatus: paymentInfo?.transactionId ? 'paid' : 'pending', 
+            paidAt: paymentInfo?.transactionId ? new Date() : undefined 
         });
         return order;
     }
@@ -52,6 +59,21 @@ export class OrderService {
             throw new HttpError(404, "Order not found");
         }    
         return order; 
+    }
+
+    async updatePaymentStatus(orderId: string, status: 'paid' | 'failed' | 'refunded' , transactionId?: string){
+        const update: any = {paymentStatus: status}; 
+        if(transactionId) update.transactionId = transactionId; 
+        if(status === 'paid') update.paidAt = new Date();
+
+        return OrderModel.findByIdAndUpdate(orderId, update, {new: true});
+    }
+
+    async refundOrder(orderId: string) {
+        return OrderModel.findByIdAndUpdate(orderId, 
+            {paymentStatus: 'refunded'},
+            {new: true}
+        );
     }
 
 }

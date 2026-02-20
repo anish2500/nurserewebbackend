@@ -9,7 +9,7 @@ export class OrderController {
     async createOrder(req: Request, res: Response) {
         try {
             const userId = req.user?._id?.toString();
-            const { items, totalAmount } = req.body;
+            const { items, totalAmount, paymentMethod, transactionId } = req.body;
 
             if (!items || !totalAmount) {
                 return res.status(400).json({
@@ -18,7 +18,7 @@ export class OrderController {
                 });
             }
 
-            const order = await orderService.createOrder(userId!, items, totalAmount);
+            const order = await orderService.createOrder(userId!, items, totalAmount, {paymentMethod, transactionId});
             await cartService.clearCart(userId!);
 
             return res.status(201).json({
@@ -88,5 +88,18 @@ export class OrderController {
                 message: error.message || "Internal Server Error"
             });
         }
+    }
+
+    async updatePaymentStatus (req: Request, res: Response) {
+        const { orderId} = req.params; 
+        const {status, transactionId} = req.body; 
+        const order = await orderService.updatePaymentStatus(orderId, status, transactionId);
+        return res.status(200).json({success: true, data: order});
+    }
+
+    async refundOrder(req: Request, res: Response){
+        const {orderId} = req.params; 
+        const order = await orderService.refundOrder(orderId);
+        return res.status(200).json({success: true, data: order});
     }
 }

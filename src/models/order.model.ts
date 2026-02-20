@@ -10,7 +10,15 @@ const OrderItemSchema = new Schema ({
 const OrderSchema = new Schema ({
     userId : {type: Schema.Types.ObjectId, ref : 'User', required : true},
     items : [OrderItemSchema],
-    totalAmount : {type: Number, required: true}
+    totalAmount : {type: Number, required: true}, 
+    paymentStatus : {
+        type: String, 
+        enum: ['pending', 'paid', 'failed', 'refunded'],
+        default: 'pending'
+    }, 
+    paymentMethod: {type: String, default: 'cash_on_delivery'},
+    transactionId: {type: String}, 
+    paidAt: {type: Date}
 }, {timestamps: true});
 
 export const OrderModel = mongoose.models.Order || mongoose.model('Order', OrderSchema);

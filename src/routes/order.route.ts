@@ -12,4 +12,7 @@ router.get("/", orderController.getOrders);
 router.get("/:orderId", orderController.getOrderById);
 router.delete("/:orderId", orderController.clearOrder);
 
+router.patch("/:orderId/payment", orderController.updatePaymentStatus);
+router.post("/:orderId/refund" , orderController.refundOrder);
+
 export default router;

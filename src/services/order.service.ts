@@ -1,36 +1,19 @@
 import { OrderModel } from "../models/order.model";
 import { HttpError } from "../errors/http-error";
-import { PlantRepository } from "../repositories/plant.repository";
-
-const plantRepository = new PlantRepository();
 
 export class OrderService {
-    async createOrder(userId: string, items: any[], totalAmount: number) {
-        // Check stock availability for each item
-        for (const item of items) {
-            const plant = await plantRepository.getPlantById(item.plantId);
-            if (!plant) {
-                throw new HttpError(404, `Plant not found`);
-            }
-            if (plant.stock < item.quantity) {
-                throw new HttpError(400, `Insufficient stock for ${plant.name}. Available: ${plant.stock}`);
-            }
-        }
-
-        // Decrement stock for each item
-        for (const item of items) {
-            const plant = await plantRepository.getPlantById(item.plantId);
-            if (plant) {
-                await plantRepository.updatePlant(item.plantId, {
-                    stock: plant.stock - item.quantity
-                });
-            }
-        }
-
+    async createOrder(userId: string, items: any[], totalAmount: number, paymentInfo?: {
+        paymentMethod?: string; 
+        transactionId?: string; 
+    }) {
         const order = await OrderModel.create({
             userId,
             items,
-            totalAmount
+            totalAmount, 
+            paymentMethod: paymentInfo?.paymentMethod || 'cash_on_delivery', 
+            transactionId: paymentInfo?.transactionId, 
+            paymentStatus: paymentInfo?.transactionId ? 'paid' : 'pending', 
+            paidAt: paymentInfo?.transactionId ? new Date() : undefined 
         });
         return order;
     }
@@ -76,6 +59,21 @@ export class OrderService {
             throw new HttpError(404, "Order not found");
         }    
         return order; 
+    }
+
+    async updatePaymentStatus(orderId: string, status: 'paid' | 'failed' | 'refunded' , transactionId?: string){
+        const update: any = {paymentStatus: status}; 
+        if(transactionId) update.transactionId = transactionId; 
+        if(status === 'paid') update.paidAt = new Date();
+
+        return OrderModel.findByIdAndUpdate(orderId, update, {new: true});
+    }
+
+    async refundOrder(orderId: string) {
+        return OrderModel.findByIdAndUpdate(orderId, 
+            {paymentStatus: 'refunded'},
+            {new: true}
+        );
     }
 
 }

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { OrderService } from "../services/order.service";
 import { CartService } from "../services/cart.service";
+import { PlantModel } from "../models/plant.model";
 
 const orderService = new OrderService();
 const cartService = new CartService();
@@ -91,10 +92,26 @@ export class OrderController {
     }
 
     async updatePaymentStatus (req: Request, res: Response) {
-        const { orderId} = req.params; 
-        const {status, transactionId} = req.body; 
-        const order = await orderService.updatePaymentStatus(orderId, status, transactionId);
-        return res.status(200).json({success: true, data: order});
+        try {
+            const { orderId} = req.params; 
+            const {paymentStatus, transactionId} = req.body; 
+            const order = await orderService.updatePaymentStatus(orderId, paymentStatus, transactionId);
+
+            if (paymentStatus === 'paid' && order && order.items) {
+                for (const item of order.items) {
+                    await PlantModel.findByIdAndUpdate(item.plantId, {
+                        $inc: { stock: -item.quantity }
+                    });
+                }
+            }
+
+            return res.status(200).json({success: true, data: order});
+        } catch (error: any) {
+            return res.status(error.statusCode || 500).json({
+                success: false,
+                message: error.message || "Internal Server Error"
+            });
+        }
     }
 
     async refundOrder(req: Request, res: Response){

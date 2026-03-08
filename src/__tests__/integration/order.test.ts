@@ -156,7 +156,7 @@ describe('Order Integration Tests', () => {
                 .patch(`/api/orders/${testOrderId}/payment`)
                 .set('Authorization', `Bearer ${authToken}`)
                 .send({
-                    status: 'paid',
+                    paymentStatus: 'paid',
                     transactionId: 'TXN123456'
                 });
 
